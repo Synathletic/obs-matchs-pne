@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Observation des matchs · PNE &amp; Sélection U23</title>
+  <meta name="theme-color" content="#008751">
+  <meta name="description" content="Identification des meilleurs joueurs des matchs de championnat pour le Programme National Élite et la Sélection nationale U23 de football du Bénin.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Observation des matchs · PNE &amp; Sélection U23">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="entete">
+    <img src="logo.svg" alt="Ballon de football" class="logo">
+    <span class="entete-titre">Observation des matchs · PNE &amp; Sélection U23</span>
+    <img src="drapeau.svg" alt="Drapeau du Bénin" class="drapeau">
+    <button id="btn-menu-deconnexion" class="btn-lien cache" type="button">Déconnexion</button>
+  </header>
+
+  <main id="app" aria-live="polite">
+    <p class="chargement">Chargement…</p>
+  </main>
+
+  <div id="message" class="message cache" role="status"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
