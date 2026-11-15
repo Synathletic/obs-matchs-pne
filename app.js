@@ -130,7 +130,7 @@ function ecranAuth() {
   });
   racine.append(el("section", { class: "carte" }, [
     el("h1", { text: "Bienvenue" }),
-    el("p", { class: "petit", text: "Outil d'identification des meilleurs joueurs des matchs de championnat, pour le Programme National Élite et la Sélection nationale U23 de football du Bénin. Les comptes sont créés par le concepteur." }),
+    el("p", { class: "petit", text: "Outil d'identification des meilleurs joueurs des matchs de championnat, pour le Programme National Élite et la Sélection nationale U23 de football du Bénin." }),
     form]), signature());
 }
 async function motDePasseOublie(form) {
