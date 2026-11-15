@@ -1,6 +1,6 @@
 # Observation des matchs · PNE & Sélection U23 (Bénin)
 
-Application web installable (PWA) : les observateurs désignent les meilleurs joueurs des matchs de championnat ; le staff du programme élite consulte la base de détection.
+Application web installable (PWA) : les observateurs désignent les meilleurs joueurs des matchs de championnat ; le staff du programme élite consulte la base d'identification.
 
 Concepteur : Alexandre GERBER
 

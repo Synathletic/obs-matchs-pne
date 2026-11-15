@@ -165,7 +165,7 @@ function ecranConsentement(profil) {
   const info = el("div", { class: "texte-long", tabindex: "0" });
   info.innerHTML = [
     "<h3>À quoi sert cet outil</h3>",
-    "<p>Après chaque match de championnat, tu peux désigner jusqu'à <strong>5 joueurs</strong> qui t'ont marqué (numéro de maillot et club), en expliquant pourquoi. Ces désignations alimentent une <strong>base de données de détection</strong> utilisée par le staff du Programme National Élite pour suivre les joueurs et préparer les sélections (Programme National Élite, Sélection nationale U23).</p>",
+    "<p>Après chaque match de championnat, tu peux désigner jusqu'à <strong>5 joueurs</strong> qui t'ont marqué (numéro de maillot et club), en expliquant pourquoi. Ces désignations alimentent une <strong>base de données d'identification</strong> utilisée par le staff du Programme National Élite pour suivre les joueurs et préparer les sélections (Programme National Élite, Sélection nationale U23).</p>",
     "<h3>Ce qui est enregistré</h3>",
     "<p>Ton nom, ta fonction, ton club éventuel, et chacune de tes désignations (match, club, numéro, motifs, justification). Les autres observateurs ne voient <strong>pas</strong> tes désignations ; seul le staff du programme y a accès.</p>",
     "<p>Aucune donnée n'est vendue ni utilisée pour de la publicité. Les données sont hébergées chez un prestataire technique (Supabase) dont les serveurs peuvent se trouver hors du Bénin. Tu peux demander l'accès, la correction ou la suppression de tes données à Alexandre GERBER.</p>",
@@ -219,7 +219,7 @@ function ecranAccueil(profil) {
       ])
     ]),
     estStaff ? el("section", { class: "carte" }, [
-      el("h2", { text: "Base de détection" }),
+      el("h2", { text: "Base d'identification" }),
       el("div", { class: "grille" }, [
         tuile("Joueurs identifiés", "classement et détail", () => ecranBase(profil)),
         tuile("Matchs observés", "par date", () => ecranMatchs(profil)),
@@ -541,7 +541,7 @@ async function ecranObservateurs(profil) {
         el("div", {}, [el("strong", { text: p.nom || "(profil à compléter)" }), el("div", { class: "petit", text: [p.fonction, p.club_id ? nomClub(p.club_id) : "", (compte.get(p.id) || 0) + " désignation(s)"].filter(Boolean).join(" · ") })]),
         el("div", {}, [el("span", { class: "badge" + (p.role === "staff" ? " badge-staff" : ""), text: p.role === "staff" ? "Staff" : "Observateur" }),
           estMoi ? "" : el("button", { class: "btn btn-secondaire", type: "button", text: p.role === "staff" ? "Retirer staff" : "Passer staff", onclick: async () => {
-            if (!confirm((p.role === "staff" ? "Retirer l'accès staff à " : "Donner l'accès à la base de détection à ") + (p.nom || "ce compte") + " ?")) return;
+            if (!confirm((p.role === "staff" ? "Retirer l'accès staff à " : "Donner l'accès à la base d'identification à ") + (p.nom || "ce compte") + " ?")) return;
             const { error } = await sb.from("profiles").update({ role: p.role === "staff" ? "observateur" : "staff" }).eq("id", p.id);
             if (error) return afficherMessage(messageErreur(error), "erreur");
             afficherMessage("Rôle modifié.", "succes"); ecranObservateurs(profil);
