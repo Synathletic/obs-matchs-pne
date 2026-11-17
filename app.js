@@ -20,7 +20,7 @@ const MOTIFS = [
   ["qualite_tactique", "Qualité tactique forte"],
   ["qualite_physique", "Qualité physique forte"],
   ["leadership", "Leadership"],
-  ["determinant", "Déterminant pour son équipe (buteur, passeur, interventions, arrêts du gardien…)"]
+  ["determinant", "Déterminant pour son équipe (duels, dribbles, percussion, buts, passes décisives, arrêts du gardien…)"]
 ];
 const MOTIFS_COURT = { qualite_technique: "Technique", qualite_tactique: "Tactique", qualite_physique: "Physique", leadership: "Leadership", determinant: "Déterminant" };
 const POSTES = [["", "Poste inconnu"], ["GB", "Gardien de but"], ["DEF", "Défenseur"], ["MIL", "Milieu"], ["ATT", "Attaquant"]];
@@ -237,15 +237,13 @@ function ecranNouvelle(profil) {
   const brouillon = lire(CLE_BROUILLON, null);
   const reprise = brouillon && brouillon.uid === profil.id ? brouillon : null;
 
-  const champDate = el("input", { id: "date-m", type: "date", value: reprise ? reprise.date : dateLocale(), max: dateLocale() });
   const selDom = el("select", { id: "dom" }, optionsClubs("Choisis l'équipe 1…", (c) => c.actif));
   const selExt = el("select", { id: "ext" }, optionsClubs("Choisis l'équipe 2…", (c) => c.actif));
-  const champJournee = el("input", { id: "journee", type: "number", min: "1", max: "60", inputmode: "numeric", placeholder: "facultatif", value: reprise && reprise.journee ? reprise.journee : "" });
   if (reprise) { selDom.value = reprise.dom || ""; selExt.value = reprise.ext || ""; }
   else if (profil.club_id && profil.fonction === "Coach de club") selDom.value = String(profil.club_id);
   const zoneJoueurs = el("div", { id: "joueurs" });
   const boutonAjout = el("button", { class: "btn btn-secondaire", type: "button", text: "+ Ajouter un joueur" });
-  const boutonEnvoi = el("button", { class: "btn", type: "submit", text: "Enregistrer mes désignations" });
+  const boutonEnvoi = el("button", { class: "btn", type: "submit", text: "Valider mes désignations" });
 
   function clubsDuMatch() {
     return [selDom.value, selExt.value].filter(Boolean);
@@ -272,13 +270,32 @@ function ecranNouvelle(profil) {
     }));
     const just = el("textarea", { class: "just-joueur", maxlength: "500", placeholder: "Pourquoi, et comment ? (ex. : a gagné tous ses duels, deux passes décisives…)" });
     just.value = init.justification || "";
+    const etr = el("input", { type: "checkbox", class: "etr-joueur" });
+    if (init.etranger) etr.checked = true;
+    const apercu = el("div", { class: "petit apercu-joueur" });
+    let jeton = 0;
+    async function majApercu() {
+      const n = Number(num.value), c = Number(selClub.value);
+      apercu.textContent = "";
+      if (!c || !Number.isInteger(n) || n < 1 || n > 99) return;
+      const mon = ++jeton;
+      const { data } = await sb.rpc("apercu_joueur", { p_club: c, p_numero: n });
+      if (mon !== jeton) return;
+      const j = data && data[0];
+      if (j) { apercu.textContent = "→ " + j.nom + " " + j.prenom + (j.etranger ? " (" + (j.nationalite || "étranger") + ")" : ""); if (j.etranger) etr.checked = true; }
+      else apercu.textContent = "Joueur non trouvé dans la liste des effectifs : vérifie le numéro et l'équipe.";
+    }
+    num.addEventListener("input", majApercu); selClub.addEventListener("change", majApercu);
     bloc.append(el("div", { class: "ligne-haut" }, [titre, retirer]),
       el("div", { class: "ligne-2" }, [el("div", {}, [el("label", { text: "Équipe" }), selClub]), el("div", {}, [el("label", { text: "Numéro du maillot" }), num])]),
+      apercu,
+      el("label", { class: "ligne-case" }, [etr, "Joueur étranger"]),
       el("label", { text: "Pourquoi ce joueur ?" }), motifs, just);
     zoneJoueurs.append(bloc);
     majSelecteursClub();
     if (init.club) selClub.value = init.club;
     renumeroter();
+    majApercu();
   }
   function renumeroter() {
     [...zoneJoueurs.children].forEach((b, i) => { b.querySelector("h3").textContent = "Joueur " + (i + 1); });
@@ -286,10 +303,10 @@ function ecranNouvelle(profil) {
   }
   function lireFormulaire(brut) {
     return {
-      date: champDate.value, dom: selDom.value, ext: selExt.value, journee: champJournee.value,
+      dom: selDom.value, ext: selExt.value,
       joueurs: [...zoneJoueurs.children].map((b) => ({
         club: b.querySelector(".club-joueur").value, numero: b.querySelector(".num-joueur").value,
-        motifs: [...b.querySelectorAll(".motif:checked")].map((c) => c.value), justification: b.querySelector(".just-joueur").value.trim()
+        etranger: b.querySelector(".etr-joueur").checked, motifs: [...b.querySelectorAll(".motif:checked")].map((c) => c.value), justification: b.querySelector(".just-joueur").value.trim()
       }))
     };
   }
@@ -298,12 +315,10 @@ function ecranNouvelle(profil) {
   boutonAjout.addEventListener("click", () => { ajouterBloc(); sauverBrouillon(); });
 
   const form = el("form", { novalidate: "" }, [
-    el("label", { for: "date-m", text: "Date du match" }), champDate,
     el("label", { for: "dom", text: "Équipe 1 (à domicile)" }), selDom,
     el("label", { for: "ext", text: "Équipe 2 (à l'extérieur)" }), selExt,
-    el("label", { for: "journee", text: "Journée de championnat" }), champJournee,
     el("h2", { text: "Joueurs qui t'ont marqué" }),
-    el("p", { class: "petit", text: "5 au maximum. Ce n'est pas une obligation : si tu n'as vu qu'un ou deux bons joueurs, n'en désigne que un ou deux." }),
+    el("p", { class: "petit", text: "5 au maximum. Ce n'est pas une obligation : si tu n'as vu qu'un ou deux bons joueurs, n'en désigne que un ou deux. Attention : une fois validées, tes désignations ne peuvent plus être modifiées ni supprimées." }),
     zoneJoueurs, boutonAjout, boutonEnvoi
   ]);
   form.addEventListener("input", sauverBrouillon);
@@ -311,7 +326,6 @@ function ecranNouvelle(profil) {
   form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const f = lireFormulaire();
-    if (!f.date) return afficherMessage("Choisis la date du match.", "erreur");
     if (!f.dom || !f.ext) return afficherMessage("Choisis les deux équipes du match.", "erreur");
     if (f.dom === f.ext) return afficherMessage("Les deux équipes doivent être différentes.", "erreur");
     if (!f.joueurs.length) return afficherMessage("Ajoute au moins un joueur.", "erreur");
@@ -326,14 +340,15 @@ function ecranNouvelle(profil) {
       if (vus.has(cle)) return afficherMessage("Le joueur n°" + n + " de " + nomClub(Number(j.club)) + " est indiqué deux fois.", "erreur");
       vus.add(cle);
     }
+    if (!confirm("Valider " + f.joueurs.length + " joueur(s) pour " + nomClub(Number(f.dom)) + " – " + nomClub(Number(f.ext)) + " ?\n\nAprès validation, tu ne pourras plus modifier ni supprimer ces désignations.")) return;
     boutonEnvoi.disabled = true;
     try {
       const dom = Number(f.dom), ext = Number(f.ext);
-      let { data: trouves, error: e1 } = await sb.from("matchs").select("id, club_domicile_id, club_exterieur_id").eq("date", f.date);
+      let { data: trouves, error: e1 } = await sb.from("matchs").select("id").eq("club_domicile_id", dom).eq("club_exterieur_id", ext);
       if (e1) throw e1;
-      let match = (trouves || []).find((m) => (m.club_domicile_id === dom && m.club_exterieur_id === ext) || (m.club_domicile_id === ext && m.club_exterieur_id === dom));
+      let match = (trouves || [])[0];
       if (!match) {
-        const { data, error } = await sb.from("matchs").insert({ date: f.date, club_domicile_id: dom, club_exterieur_id: ext, journee: f.journee ? Number(f.journee) : null, cree_par: profil.id }).select("id").single();
+        const { data, error } = await sb.from("matchs").insert({ club_domicile_id: dom, club_exterieur_id: ext, cree_par: profil.id }).select("id").single();
         if (error) throw error;
         match = data;
       }
@@ -341,7 +356,7 @@ function ecranNouvelle(profil) {
       if (e3) throw e3;
       if ((deja || []).length + f.joueurs.length > MAX_JOUEURS)
         throw new Error("Maximum 5 joueurs par match : tu en as déjà " + (deja || []).length + " pour ce match.");
-      const lignes = f.joueurs.map((j) => ({ match_id: match.id, observateur_id: profil.id, club_id: Number(j.club), numero: Number(j.numero), motifs: j.motifs, justification: j.justification || null }));
+      const lignes = f.joueurs.map((j) => ({ match_id: match.id, observateur_id: profil.id, club_id: Number(j.club), numero: Number(j.numero), etranger: !!j.etranger, motifs: j.motifs, justification: j.justification || null }));
       const { error } = await sb.from("identifications").insert(lignes);
       if (error) throw error;
       effacer(CLE_BROUILLON);
@@ -365,27 +380,22 @@ async function ecranMesObservations(profil) {
   racine.replaceChildren(barreTitre("Mes désignations", () => ecranAccueil(profil)), el("p", { class: "chargement", text: "Chargement…" }));
   try {
     const lignes = await toutLire(() => sb.from("identifications")
-      .select("id, numero, motifs, justification, club_id, match_id, matchs(date, club_domicile_id, club_exterieur_id, journee)")
+      .select("id, numero, motifs, justification, etranger, club_id, match_id, created_at, matchs(date, club_domicile_id, club_exterieur_id)")
       .eq("observateur_id", profil.id).order("created_at", { ascending: false }));
     const carte = el("section", { class: "carte" });
     if (!lignes.length) carte.append(el("p", { class: "vide", text: "Aucune désignation pour l'instant." }));
+    else carte.append(el("p", { class: "petit", text: "Désignations validées : elles ne peuvent plus être modifiées." }));
     const parMatch = new Map();
     for (const l of lignes) { if (!parMatch.has(l.match_id)) parMatch.set(l.match_id, []); parMatch.get(l.match_id).push(l); }
-    const matchs = [...parMatch.values()].sort((a, b) => (b[0].matchs.date > a[0].matchs.date ? 1 : -1));
+    const matchs = [...parMatch.values()].sort((a, b) => (b[0].created_at > a[0].created_at ? 1 : -1));
     for (const g of matchs) {
       const m = g[0].matchs;
-      const bloc = el("div", { class: "obs-ligne" }, [el("strong", { text: jfr(m.date) + " · " + libelleMatch(m) })]);
+      const bloc = el("div", { class: "obs-ligne" }, [el("strong", { text: libelleMatch(m) })]);
       for (const l of g) {
         bloc.append(el("div", { class: "ligne-haut" }, [
-          el("div", {}, [el("span", { class: "numero", text: String(l.numero) }), nomClub(l.club_id), el("br"),
+          el("div", {}, [el("span", { class: "numero", text: String(l.numero) }), nomClub(l.club_id) + (l.etranger ? " · étranger" : ""), el("br"),
             ...l.motifs.map((k) => el("span", { class: "puce", text: MOTIFS_COURT[k] || k })),
-            l.justification ? el("div", { class: "petit", text: l.justification }) : ""]),
-          el("button", { class: "btn-suppr", type: "button", text: "Supprimer", onclick: async () => {
-            if (!confirm("Supprimer cette désignation ?")) return;
-            const { error } = await sb.from("identifications").delete().eq("id", l.id);
-            if (error) return afficherMessage(messageErreur(error), "erreur");
-            afficherMessage("Désignation supprimée.", "succes"); ecranMesObservations(profil);
-          } })
+            l.justification ? el("div", { class: "petit", text: l.justification }) : ""])
         ]));
       }
       carte.append(bloc);
@@ -399,13 +409,14 @@ let BASE = null; // cache des lignes de la base pendant la session
 async function chargerBase() {
   const [lignes, refs] = await Promise.all([
     toutLire(() => sb.from("identifications")
-      .select("id, numero, motifs, justification, club_id, observateur_id, match_id, created_at, matchs(date, club_domicile_id, club_exterieur_id, journee), profiles(nom, fonction)")
+      .select("id, numero, motifs, justification, club_id, observateur_id, match_id, created_at, etranger, matchs(date, club_domicile_id, club_exterieur_id), profiles(nom, fonction)")
       .order("created_at", { ascending: false })),
-    toutLire(() => sb.from("joueurs_ref").select("id, club_id, numero, nom, poste, date_naissance, notes").order("id"))
+    toutLire(() => sb.from("joueurs_ref").select("id, club_id, numero, nom, prenom, poste, date_naissance, nationalite, etranger, notes").order("id"))
   ]);
   BASE = { lignes, refs };
   return BASE;
 }
+function nomJoueur(ref) { return ref ? (ref.nom + " " + (ref.prenom || "")).trim() : ""; }
 function refDe(club, numero) { return BASE.refs.find((r) => r.club_id === club && r.numero === numero); }
 
 async function ecranBase(profil) {
@@ -424,7 +435,7 @@ async function ecranBase(profil) {
     const q = champRecherche.value.trim().toLowerCase();
     const groupes = new Map();
     for (const l of BASE.lignes) {
-      if (limite && l.matchs.date < limite) continue;
+      if (limite && l.created_at.slice(0, 10) < limite) continue;
       if (selClub.value && String(l.club_id) !== selClub.value) continue;
       if (selFonction.value && (!l.profiles || l.profiles.fonction !== selFonction.value)) continue;
       const cle = l.club_id + "-" + l.numero;
@@ -434,14 +445,15 @@ async function ecranBase(profil) {
     let liste = [...groupes.values()].map((g) => ({
       ...g, ref: refDe(g.club, g.numero), votes: g.lignes.length,
       obs: new Set(g.lignes.map((x) => x.observateur_id)).size, matchs: new Set(g.lignes.map((x) => x.match_id)).size,
-      derniere: g.lignes.reduce((m, x) => (x.matchs.date > m ? x.matchs.date : m), "")
+      derniere: g.lignes.reduce((m, x) => (x.created_at.slice(0, 10) > m ? x.created_at.slice(0, 10) : m), "")
     }));
-    if (q) liste = liste.filter((g) => String(g.numero) === q || (g.ref && g.ref.nom.toLowerCase().includes(q)) || nomClub(g.club).toLowerCase().includes(q));
+    if (q) liste = liste.filter((g) => String(g.numero) === q || (g.ref && nomJoueur(g.ref).toLowerCase().includes(q)) || nomClub(g.club).toLowerCase().includes(q));
     liste.sort((a, b) => b.obs - a.obs || b.votes - a.votes || (b.derniere > a.derniere ? 1 : -1));
     resume.textContent = liste.length + " joueur(s) identifié(s) · " + liste.reduce((s, g) => s + g.votes, 0) + " désignation(s)";
     zoneListe.replaceChildren(...(liste.length ? liste.map((g) => el("button", { class: "ligne-athlete", type: "button", onclick: () => ecranJoueur(profil, g.club, g.numero) }, [
       el("div", { class: "ligne-haut" }, [
-        el("div", {}, [el("span", { class: "numero", text: String(g.numero) }), el("strong", { text: g.ref && g.ref.nom ? g.ref.nom : "Joueur à identifier" }), el("div", { class: "petit", text: nomClub(g.club) + (g.ref && g.ref.poste ? " · " + g.ref.poste : "") })]),
+        el("div", {}, [el("span", { class: "numero", text: String(g.numero) }), el("strong", { text: g.ref ? nomJoueur(g.ref) : "Joueur hors liste" }),
+          el("div", { class: "petit", text: nomClub(g.club) + " · dossard " + g.numero + (g.ref && g.ref.date_naissance ? " · né le " + jfr(g.ref.date_naissance) : "") + (g.ref && g.ref.etranger ? " · étranger" + (g.ref.nationalite ? " (" + g.ref.nationalite + ")" : "") : (!g.ref && g.lignes.some((x) => x.etranger) ? " · étranger" : "")) })]),
         el("span", { class: "pastille-niv niv-vert", text: g.votes + (g.votes > 1 ? " votes" : " vote") })]),
       el("div", { class: "petit", text: g.obs + " observateur(s) · " + g.matchs + " match(s) · dernier : " + jfr(g.derniere) })
     ])) : [el("p", { class: "vide", text: "Aucun joueur pour ces filtres." })]));
@@ -460,11 +472,11 @@ async function ecranBase(profil) {
 
 function exporterCsv() {
   const cell = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
-  const entete = ["Date du match", "Journée", "Équipe domicile", "Équipe extérieur", "Club du joueur", "Numéro", "Nom (référentiel)", "Poste", "Raisons", "Justification", "Observateur", "Fonction"];
+  const entete = ["Date d'enregistrement", "Équipe 1 (domicile)", "Équipe 2 (extérieur)", "Club du joueur", "Dossard", "Nom", "Prénom", "Date de naissance", "Étranger", "Nationalité", "Raisons", "Justification", "Observateur", "Fonction"];
   const lignes = BASE.lignes.map((l) => {
     const r = refDe(l.club_id, l.numero);
-    return [jfr(l.matchs.date), l.matchs.journee || "", nomClub(l.matchs.club_domicile_id), nomClub(l.matchs.club_exterieur_id), nomClub(l.club_id), l.numero,
-      r ? r.nom : "", r && r.poste ? r.poste : "", l.motifs.map((k) => MOTIFS_COURT[k] || k).join(" + "), l.justification || "",
+    return [jfr(l.created_at.slice(0, 10)), nomClub(l.matchs.club_domicile_id), nomClub(l.matchs.club_exterieur_id), nomClub(l.club_id), l.numero,
+      r ? r.nom : "", r ? r.prenom || "" : "", r && r.date_naissance ? jfr(r.date_naissance) : "", (r && r.etranger) || l.etranger ? "oui" : "non", r && r.nationalite ? r.nationalite : "", l.motifs.map((k) => MOTIFS_COURT[k] || k).join(" + "), l.justification || "",
       l.profiles ? l.profiles.nom : "", l.profiles ? l.profiles.fonction || "" : ""].map(cell).join(";");
   });
   const blob = new Blob(["﻿" + [entete.map(cell).join(";")].concat(lignes).join("\r\n")], { type: "text/csv;charset=utf-8" });
@@ -477,6 +489,8 @@ async function ecranJoueur(profil, club, numero) {
   const lignes = BASE.lignes.filter((l) => l.club_id === club && l.numero === numero);
   const ref = refDe(club, numero);
   const champNom = el("input", { id: "ref-nom", type: "text", maxlength: "80", value: ref ? ref.nom : "" });
+  const champPrenom = el("input", { id: "ref-prenom", type: "text", maxlength: "80", value: ref ? ref.prenom || "" : "" });
+  const champNat = el("input", { id: "ref-nat", type: "text", maxlength: "40", placeholder: "vide si béninois", value: ref && ref.nationalite ? ref.nationalite : "" });
   const selPoste = el("select", { id: "ref-poste" }, POSTES.map(([v, t]) => el("option", { value: v, text: t })));
   selPoste.value = ref && ref.poste ? ref.poste : "";
   const champNaiss = el("input", { id: "ref-naiss", type: "date", value: ref && ref.date_naissance ? ref.date_naissance : "" });
@@ -484,7 +498,9 @@ async function ecranJoueur(profil, club, numero) {
   champNotes.value = ref && ref.notes ? ref.notes : "";
   const enreg = el("button", { class: "btn", type: "submit", text: "Enregistrer la fiche" });
   const form = el("form", {}, [
-    el("label", { for: "ref-nom", text: "Nom et prénom du joueur" }), champNom,
+    el("label", { for: "ref-nom", text: "Nom" }), champNom,
+    el("label", { for: "ref-prenom", text: "Prénom" }), champPrenom,
+    el("label", { for: "ref-nat", text: "Nationalité étrangère" }), champNat,
     el("label", { for: "ref-poste", text: "Poste" }), selPoste,
     el("label", { for: "ref-naiss", text: "Date de naissance" }), champNaiss,
     el("label", { for: "ref-notes", text: "Notes" }), champNotes, enreg]);
@@ -492,15 +508,15 @@ async function ecranJoueur(profil, club, numero) {
     ev.preventDefault();
     enreg.disabled = true;
     try {
-      const { error } = await sb.from("joueurs_ref").upsert({ club_id: club, numero, nom: champNom.value.trim(), poste: selPoste.value || null, date_naissance: champNaiss.value || null, notes: champNotes.value.trim() || null }, { onConflict: "club_id,numero" });
+      const { error } = await sb.from("joueurs_ref").upsert({ club_id: club, numero, nom: champNom.value.trim(), prenom: champPrenom.value.trim(), nationalite: champNat.value.trim() || null, etranger: !!champNat.value.trim(), poste: selPoste.value || null, date_naissance: champNaiss.value || null, notes: champNotes.value.trim() || null }, { onConflict: "club_id,numero" });
       if (error) throw error;
       await chargerBase();
       afficherMessage("Fiche enregistrée.", "succes");
       ecranJoueur(profil, club, numero);
     } catch (err) { afficherMessage(messageErreur(err), "erreur"); enreg.disabled = false; }
   });
-  const detail = lignes.slice().sort((a, b) => (b.matchs.date > a.matchs.date ? 1 : -1)).map((l) => el("div", { class: "obs-ligne" }, [
-    el("strong", { text: jfr(l.matchs.date) + " · " + libelleMatch(l.matchs) }),
+  const detail = lignes.slice().sort((a, b) => (b.created_at > a.created_at ? 1 : -1)).map((l) => el("div", { class: "obs-ligne" }, [
+    el("strong", { text: jfr(l.created_at.slice(0, 10)) + " · " + libelleMatch(l.matchs) }),
     el("div", { class: "petit", text: (l.profiles ? l.profiles.nom : "Observateur") + (l.profiles && l.profiles.fonction ? " (" + l.profiles.fonction + ")" : "") }),
     el("div", {}, l.motifs.map((k) => el("span", { class: "puce", text: MOTIFS_COURT[k] || k }))),
     l.justification ? el("div", { text: l.justification }) : ""]));
@@ -521,8 +537,8 @@ async function ecranMatchs(profil) {
     }
     const liste = [...par.values()].sort((a, b) => (b.m.date > a.m.date ? 1 : -1));
     racine.replaceChildren(barreTitre("Matchs observés", () => ecranAccueil(profil)), el("section", { class: "carte" },
-      liste.length ? liste.map((g) => el("div", { class: "obs-ligne" }, [el("strong", { text: jfr(g.m.date) + " · " + libelleMatch(g.m) }),
-        el("div", { class: "petit", text: (g.m.journee ? "Journée " + g.m.journee + " · " : "") + g.obs.size + " observateur(s) · " + g.n + " désignation(s)" })]))
+      liste.length ? liste.map((g) => el("div", { class: "obs-ligne" }, [el("strong", { text: libelleMatch(g.m) }),
+        el("div", { class: "petit", text: g.obs.size + " observateur(s) · " + g.n + " désignation(s)" })]))
         : [el("p", { class: "vide", text: "Aucun match observé pour l'instant." })]));
   } catch (err) { racine.replaceChildren(barreTitre("Matchs observés", () => ecranAccueil(profil)), el("p", { class: "avertissement", text: messageErreur(err) })); }
 }
