@@ -110,7 +110,7 @@ function ecranPourquoi(retour) {
   const h = (t) => el("h2", { text: t });
   const dessin = el("div", { class: "guepard" });
   dessin.innerHTML = SVG_GUEPARD;
-  racine.append(barreTitre("Pourquoi cette application ?", retour), el("section", { class: "carte pourquoi" }, [
+  racine.append(Object.assign(barreTitre("Pourquoi cette application ?", retour), { className: "barre-titre centre" }), el("section", { class: "carte pourquoi" }, [
     dessin,
     el("h1", { text: "Bienvenue sur l'application d'observation du football béninois" }),
     el("p", { class: "accroche", text: "Ensemble, identifions les talents de demain !" }),
