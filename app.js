@@ -252,11 +252,14 @@ function ecranAccueil(profil) {
       el("p", { class: "petit", text: estStaff ? " Consulte la base des joueurs identifiés après chaque match." : " Après un match, désigne les joueurs qui t'ont marqué (5 au maximum)." })
     ]),
     el("section", { class: "carte" }, [
+      el("h2", { text: "Pourquoi cette application ?" }),
+      el("div", { class: "grille" }, [tuile("Pourquoi ?", "le sens de l'application", () => ecranPourquoi(() => ecranAccueil(profil)))])
+    ]),
+    el("section", { class: "carte" }, [
       el("h2", { text: "Mes observations" }),
       el("div", { class: "grille" }, [
         tuile("Nouvelle observation", "après un match", () => ecranNouvelle(profil)),
-        tuile("Mes désignations", "validées", () => ecranMesObservations(profil)),
-        tuile("Pourquoi ?", "le sens de l'application", () => ecranPourquoi(() => ecranAccueil(profil)))
+        tuile("Mes désignations", "validées", () => ecranMesObservations(profil))
       ])
     ]),
     estStaff ? el("section", { class: "carte" }, [
