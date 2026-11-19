@@ -158,3 +158,12 @@ textarea:focus { outline: 3px solid var(--orange); outline-offset: 1px; }
 .filtres { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .filtres label { margin: 4px 0 2px; font-size: .8rem; }
 .vide { text-align: center; color: var(--gris); padding: 18px 0; }
+
+/* Onglet Pourquoi */
+.guepard { max-width: 220px; margin: 0 auto 8px; }
+.guepard svg { width: 100%; height: auto; display: block; }
+.pourquoi h1 { text-align: center; font-size: 1.25rem; }
+.pourquoi .accroche { text-align: center; font-weight: 700; color: var(--vert); font-size: 1.05rem; }
+.pourquoi h2 { color: var(--vert); margin-top: 18px; }
+.pourquoi ul { padding-left: 20px; }
+.pourquoi .conclusion { text-align: center; font-weight: 800; color: var(--rouge); margin-top: 18px; }

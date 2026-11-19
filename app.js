@@ -102,6 +102,45 @@ async function toutLire(construire) {
   return tout;
 }
 
+/* ---------- Pourquoi cette application ---------- */
+const SVG_GUEPARD = '<svg viewBox="0 0 220 180" role="img" aria-label="Tête de guépard avec un ballon de football" xmlns="http://www.w3.org/2000/svg">'
+  + '<circle cx="52" cy="42" r="17" fill="#E3A52B"/><circle cx="52" cy="42" r="8" fill="#3b2a14"/>'
+  + '<circle cx="148" cy="42" r="17" fill="#E3A52B"/><circle cx="148" cy="42" r="8" fill="#3b2a14"/>'
+  + '<ellipse cx="100" cy="88" rx="64" ry="56" fill="#F2BB3C"/>'
+  + '<g fill="#3b2a14" opacity=".85"><circle cx="82" cy="46" r="3"/><circle cx="100" cy="40" r="3"/><circle cx="118" cy="46" r="3"/><circle cx="64" cy="62" r="2.6"/><circle cx="136" cy="62" r="2.6"/><circle cx="52" cy="88" r="2.6"/><circle cx="148" cy="88" r="2.6"/><circle cx="60" cy="108" r="2.4"/><circle cx="140" cy="108" r="2.4"/><circle cx="92" cy="54" r="2.2"/><circle cx="108" cy="54" r="2.2"/></g>'
+  + '<ellipse cx="100" cy="112" rx="30" ry="21" fill="#FBE8B4"/>'
+  + '<path d="M74 84 Q64 106 78 126 M126 84 Q136 106 122 126" fill="none" stroke="#3b2a14" stroke-width="5" stroke-linecap="round"/>'
+  + '<circle cx="76" cy="80" r="8" fill="#fff"/><circle cx="124" cy="80" r="8" fill="#fff"/><circle cx="77" cy="81" r="5" fill="#3b2a14"/><circle cx="123" cy="81" r="5" fill="#3b2a14"/><circle cx="79" cy="79" r="1.6" fill="#fff"/><circle cx="125" cy="79" r="1.6" fill="#fff"/>'
+  + '<path d="M91 98 L109 98 L100 108 Z" fill="#3b2a14"/><path d="M100 108 V116 M88 120 Q100 128 112 120" fill="none" stroke="#3b2a14" stroke-width="3" stroke-linecap="round"/>'
+  + '<circle cx="166" cy="140" r="30" fill="#fff" stroke="#1c1c1c" stroke-width="3"/>'
+  + '<polygon points="166,125 179,134 174,149 158,149 153,134" fill="#1c1c1c"/>'
+  + '<g stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"><path d="M166 125 V112 M179 134 L190 128 M174 149 L182 160 M158 149 L150 160 M153 134 L142 128"/></g>'
+  + '<path d="M20 172 H200" stroke="#008751" stroke-width="5" stroke-linecap="round"/><path d="M20 172 H80" stroke="#FCD116" stroke-width="5" stroke-linecap="round" opacity="0"/>'
+  + '</svg>';
+function ecranPourquoi(retour) {
+  racine.replaceChildren();
+  const p = (t) => el("p", { text: t });
+  const h = (t) => el("h2", { text: t });
+  const dessin = el("div", { class: "guepard" });
+  dessin.innerHTML = SVG_GUEPARD;
+  racine.append(barreTitre("Pourquoi cette application ?", retour), el("section", { class: "carte pourquoi" }, [
+    dessin,
+    el("h1", { text: "Bienvenue sur l'application d'observation du football béninois" }),
+    el("p", { class: "accroche", text: "Ensemble, identifions les talents de demain !" }),
+    p("Bienvenue et merci de participer à cette démarche d'observation et de valorisation des joueurs du championnat béninois."),
+    h("Pourquoi cette application ?"),
+    p("Permettre aux entraîneurs, sélectionneurs, membres de la DTN et Conseillers Techniques Régionaux d'identifier et de mettre en lumière les joueurs les plus performants de chaque rencontre."),
+    h("Comment ça fonctionne ?"),
+    el("ul", {}, ["Sélectionnez le match auquel vous avez assisté.", "Identifiez jusqu'à 5 joueurs qui vous ont particulièrement marqué.", "Renseignez leur numéro de maillot et leurs critères d'évaluation.", "Validez et transmettez vos observations."].map((t) => el("li", { text: t }))),
+    p("Chaque observateur apporte son propre regard et contribue à enrichir une base de données nationale."),
+    h("À quoi ça va servir ?"),
+    p("Centraliser les observations des matchs afin de constituer un véritable vivier de joueurs à potentiel pour les sélections nationales et le Programme National Élite (U23, U20, U17 et U15)."),
+    p("Votre regard compte. Votre observation peut révéler un talent de demain."),
+    p("Merci pour votre engagement au service du développement du football béninois."),
+    el("p", { class: "conclusion", text: "Ensemble, formons aujourd'hui les Guépards de demain !" })
+  ]), signature());
+}
+
 /* ---------- Connexion ---------- */
 function ecranAuth() {
   racine.replaceChildren();
@@ -111,7 +150,8 @@ function ecranAuth() {
     el("label", { for: "mdp", text: "Mot de passe" }),
     el("input", { id: "mdp", type: "password", autocomplete: "current-password", required: "" }),
     el("button", { class: "btn", type: "submit", text: "Me connecter" }),
-    el("button", { class: "btn btn-secondaire", type: "button", text: "Mot de passe oublié ?", onclick: () => motDePasseOublie(form) })
+    el("button", { class: "btn btn-secondaire", type: "button", text: "Mot de passe oublié ?", onclick: () => motDePasseOublie(form) }),
+    el("button", { class: "btn btn-secondaire", type: "button", text: "Pourquoi cette application ?", onclick: () => ecranPourquoi(() => ecranAuth()) })
   ]);
   form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
@@ -215,7 +255,8 @@ function ecranAccueil(profil) {
       el("h2", { text: "Mes observations" }),
       el("div", { class: "grille" }, [
         tuile("Nouvelle observation", "après un match", () => ecranNouvelle(profil)),
-        tuile("Mes désignations", "voir et corriger", () => ecranMesObservations(profil))
+        tuile("Mes désignations", "validées", () => ecranMesObservations(profil)),
+        tuile("Pourquoi ?", "le sens de l'application", () => ecranPourquoi(() => ecranAccueil(profil)))
       ])
     ]),
     estStaff ? el("section", { class: "carte" }, [
