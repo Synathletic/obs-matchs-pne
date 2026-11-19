@@ -160,7 +160,7 @@ textarea:focus { outline: 3px solid var(--orange); outline-offset: 1px; }
 .vide { text-align: center; color: var(--gris); padding: 18px 0; }
 
 /* Onglet Pourquoi */
-.guepard { position: relative; max-width: 240px; margin: 0 auto 8px; }
+.guepard { position: relative; max-width: 150px; margin: 0 auto 8px; }
 .guepard svg { width: 100%; height: auto; display: block; }
 .pourquoi h1 { text-align: center; font-size: 1.25rem; }
 .pourquoi .accroche { text-align: center; font-weight: 700; color: var(--vert); font-size: 1.05rem; }
@@ -173,4 +173,4 @@ textarea:focus { outline: 3px solid var(--orange); outline-offset: 1px; }
 .pourquoi ul { list-style: none; padding: 0; margin: 8px 0; }
 .pourquoi li { margin: 6px 0; }
 .guepard-img { width: 100%; height: auto; display: block; border-radius: 12px; }
-.guepard-ballon { position: absolute; right: -6px; bottom: 6px; width: 64px; height: 64px; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
+.guepard-ballon { position: absolute; right: -14px; bottom: 4px; width: 46px; height: 46px; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
