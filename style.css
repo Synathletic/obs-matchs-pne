@@ -177,3 +177,4 @@ textarea:focus { outline: 3px solid var(--orange); outline-offset: 1px; }
 .barre-titre.centre { position: relative; justify-content: center; }
 .barre-titre.centre .btn-retour { position: absolute; left: 0; }
 .barre-titre.centre h1 { text-align: center; font-size: 1.15rem; padding: 0 84px; }
+.guepard-ligue { position: absolute; left: calc(100% + 24px); bottom: 8px; white-space: nowrap; color: var(--rouge); font-weight: 800; font-size: 1.15rem; letter-spacing: .5px; }
