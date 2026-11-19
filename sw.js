@@ -1,7 +1,7 @@
 // Service worker Observation des matchs PNE : met en cache l'interface (pas les données de santé).
 // Les appels à Supabase ne sont JAMAIS mis en cache.
 // Changer le numéro de version ci-dessous à chaque mise à jour de l'application.
-const VERSION = "obs-pne-v1-4";
+const VERSION = "obs-pne-v1-5";
 const FICHIERS = [
   "./", "index.html", "style.css", "config.js", "app.js",
   "logo.svg", "drapeau.svg", "icon-192.png", "manifest.json"
