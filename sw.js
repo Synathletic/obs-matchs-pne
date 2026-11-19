@@ -1,7 +1,7 @@
 // Service worker Observation des matchs PNE : met en cache l'interface (pas les données de santé).
 // Les appels à Supabase ne sont JAMAIS mis en cache.
 // Changer le numéro de version ci-dessous à chaque mise à jour de l'application.
-const VERSION = "obs-pne-v1-9";
+const VERSION = "obs-pne-v1-10";
 const FICHIERS = [
   "./", "index.html", "style.css", "config.js", "app.js",
   "logo.svg", "guepard.jpg", "drapeau.svg", "icon-192.png", "manifest.json"
@@ -36,7 +36,7 @@ self.addEventListener("fetch", (e) => {
   // Fichiers de l'application : réseau d'abord, cache si hors ligne
   if (url.origin === location.origin) {
     e.respondWith(
-      fetch(req).then((r) => { const copie = r.clone(); caches.open(VERSION).then((c) => c.put(req, copie)); return r; })
+      fetch(req, { cache: "no-cache" }).then((r) => { const copie = r.clone(); caches.open(VERSION).then((c) => c.put(req, copie)); return r; })
         .catch(() => caches.match(req).then((r) => r || caches.match("index.html")))
     );
   }
