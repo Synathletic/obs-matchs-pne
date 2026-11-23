@@ -178,3 +178,10 @@ textarea:focus { outline: 3px solid var(--orange); outline-offset: 1px; }
 .barre-titre.centre .btn-retour { position: absolute; left: 0; }
 .barre-titre.centre h1 { text-align: center; font-size: 1.15rem; padding: 0 84px; }
 .guepard-ligue { position: absolute; left: calc(100% + 6px); bottom: 128px; white-space: nowrap; color: var(--rouge); font-weight: 800; font-size: 1.15rem; letter-spacing: .5px; }
+.texte-info p{margin:.5em 0;line-height:1.5}.texte-info h3{margin:1em 0 .3em;color:var(--vert)}
+.zone-info{width:100%;min-height:180px}
+.stat-grille{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:6px 0}
+.stat-grille label{display:flex;flex-direction:column;gap:2px}
+.stat-in{width:100%;padding:6px;min-width:0}
+.stat-bl{width:100%;margin-top:4px}
+.signature .made{margin-top:8px;font-weight:700;color:var(--vert)}
