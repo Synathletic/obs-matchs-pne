@@ -258,7 +258,7 @@ function ecranAccueil(profil) {
     el("section", { class: "carte" }, [
       el("h2", { text: "Ligue 1 et culture foot" }),
       el("div", { class: "grille" }, [
-        tuile("Ligue 1", "buteurs, passeurs, cartons…", () => ecranLigue1(profil)),
+        tuile("Ligue 1", "infos de la Ligue nationale de football", () => ecranLigue1(profil)),
         tuile("Le saviez-vous ?", "mis à jour chaque mois", () => ecranSaviez(profil))
       ])
     ]),
@@ -727,8 +727,8 @@ async function ecranLigue1(profil) {
     const carteInfo = info.contenu && info.contenu.trim() ? [el("section", { class: "carte" }, [paragraphes(info.contenu)])] : [];
     const cartes = [
       ...carteInfo,
-      el("section", { class: "carte" }, [el("label", { text: "Classement" }), selRub, zone,
-        el("p", { class: "petit", text: dernier ? "Données saisies par le staff · dernière mise à jour le " + jfr(dernier.slice(0, 10)) + "." : "Les données sont saisies par le staff du programme." })])
+      el("section", { class: "carte" }, [el("p", { class: "petit", text: "Source : informations de la Ligue nationale de football." }), el("label", { text: "Classement" }), selRub, zone,
+        el("p", { class: "petit", text: dernier ? "Informations de la Ligue nationale de football · dernière mise à jour le " + jfr(dernier.slice(0, 10)) + "." : "Informations de la Ligue nationale de football, saisies par le staff du programme." })])
     ];
     if (profil.role === "staff") {
       cartes.push(editeurInfo("ligue1_info", info, "Texte d'introduction Ligue 1", () => ecranLigue1(profil)));
