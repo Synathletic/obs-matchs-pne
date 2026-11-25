@@ -109,7 +109,7 @@ async function toutLire(construire) {
 }
 
 /* ---------- Pourquoi cette application ---------- */
-const SVG_GUEPARD = "<img src=\"guepard.jpg\" class=\"guepard-img\" alt=\"Guépard\"><img src=\"logo.svg\" class=\"guepard-ballon\" alt=\"Ballon\"><span class=\"guepard-ligue\">Ligue 1</span>";
+const SVG_GUEPARD = "<img src=\"logo-connexion.png\" class=\"guepard-logo\" alt=\"Logo Ligue 1 : guépard et ballon\">";
 function ecranPourquoi(retour) {
   racine.replaceChildren();
   const p = (t) => el("p", { text: t });
