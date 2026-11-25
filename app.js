@@ -96,6 +96,11 @@ const CHAMPIONNATS = [
   { cle: "f2", nom: "Ligue 2 féminine", competition: "Ligue 2 féminine", couleur: "#003087", visuel: "amazone" }
 ];
 let CHAMP = null;
+function champsAutorises(profil) {
+  if (profil && profil.role === "staff") return CHAMPIONNATS;
+  const cles = profil && Array.isArray(profil.championnats) && profil.championnats.length ? profil.championnats : ["ligue1"];
+  return CHAMPIONNATS.filter((c) => cles.includes(c.cle));
+}
 function champDeClub(c) {
   const comp = String(c.competition || "").trim().toLowerCase();
   const f = CHAMPIONNATS.find((x) => x.cle !== "ligue1" && x.competition.toLowerCase() === comp);
@@ -199,7 +204,7 @@ async function motDePasseOublie(form) {
 
 /* ---------- Profil et consentement ---------- */
 async function chargerProfil(id) {
-  const { data, error } = await sb.from("profiles").select("id, nom, role, fonction, club_id, consentement_at").eq("id", id).single();
+  const { data, error } = await sb.from("profiles").select("*").eq("id", id).single();
   if (error) throw error;
   return data;
 }
@@ -254,7 +259,7 @@ function ecranConsentement(profil) {
 /* ---------- Choix du championnat ---------- */
 function ecranChampionnats(profil) {
   racine.replaceChildren();
-  const tuiles = CHAMPIONNATS.map((c) => el("button", { class: "champ-tuile", type: "button", style: "--c:" + c.couleur, onclick: () => { CHAMP = c; BASE = null; ecranAccueil(profil); } }, [
+  const tuiles = champsAutorises(profil).map((c) => el("button", { class: "champ-tuile", type: "button", style: "--c:" + c.couleur, onclick: () => { CHAMP = c; BASE = null; ecranAccueil(profil); } }, [
     el("img", { src: c.visuel === "amazone" ? IMG_AMAZONE : IMG_JAGUAR, alt: "", class: "champ-img" }),
     el("span", { class: "champ-nom", text: c.nom })]));
   racine.append(el("section", { class: "carte" }, [
@@ -272,7 +277,7 @@ function ecranAccueil(profil) {
   racine.append(
     el("section", { class: "carte" }, [
       el("h1", { text: "Bonjour " + (profil.nom || "") }),
-      el("button", { class: "btn btn-secondaire", type: "button", text: "Championnat : " + (CHAMP ? CHAMP.nom : "") + " · changer", onclick: () => ecranChampionnats(profil) }),
+      champsAutorises(profil).length > 1 ? el("button", { class: "btn btn-secondaire", type: "button", text: "Championnat : " + (CHAMP ? CHAMP.nom : "") + " · changer", onclick: () => ecranChampionnats(profil) }) : el("span", { class: "badge", text: "Championnat : " + (CHAMP ? CHAMP.nom : "") }),
       el("span", { class: "badge" + (estStaff ? " badge-staff" : ""), text: estStaff ? "Staff du programme" : (profil.fonction || "Observateur") }),
       el("p", { class: "petit", text: estStaff ? " Consulte la base des joueurs identifiés après chaque match." : " Après un match, désigne les joueurs qui t'ont marqué (5 au maximum)." })
     ]),
@@ -645,7 +650,7 @@ async function ecranObservateurs(profil) {
   racine.replaceChildren(barreTitre("Observateurs", () => ecranAccueil(profil)), el("p", { class: "chargement", text: "Chargement…" }));
   try {
     const [pf, ids] = await Promise.all([
-      toutLire(() => sb.from("profiles").select("id, nom, role, fonction, club_id, consentement_at").order("nom")),
+      toutLire(() => sb.from("profiles").select("*").order("nom")),
       toutLire(() => sb.from("identifications").select("id, observateur_id").order("id"))]);
     const compte = new Map(); for (const i of ids) compte.set(i.observateur_id, (compte.get(i.observateur_id) || 0) + 1);
     const carte = el("section", { class: "carte" }, [el("p", { class: "petit", text: "Les comptes se créent dans Supabase (Authentication → Users → Add user). Un nouvel utilisateur renseigne son nom et sa fonction à sa première connexion." })]);
@@ -660,6 +665,18 @@ async function ecranObservateurs(profil) {
             if (error) return afficherMessage(messageErreur(error), "erreur");
             afficherMessage("Rôle modifié.", "succes"); ecranObservateurs(profil);
           } })])])]));
+      if (p.role === "staff") { carte.lastChild.append(el("p", { class: "petit", text: "Accès aux 6 championnats." })); continue; }
+      const permis = Array.isArray(p.championnats) && p.championnats.length ? p.championnats : ["ligue1"];
+      const cases = CHAMPIONNATS.map((c) => { const i = el("input", { type: "checkbox", value: c.cle }); i.checked = permis.includes(c.cle);
+        return el("label", { class: "petit", style: "display:inline-flex;align-items:center;gap:4px;margin:4px 12px 4px 0" }, [i, c.nom]); });
+      carte.lastChild.append(el("div", {}, [el("div", { class: "petit", text: "Championnats autorisés :" }), el("div", {}, cases),
+        el("button", { class: "btn btn-secondaire", type: "button", text: "Enregistrer les accès", onclick: async () => {
+          const cles = cases.map((l) => l.firstChild).filter((i) => i.checked).map((i) => i.value);
+          if (!cles.length) return afficherMessage("Coche au moins un championnat.", "erreur");
+          const { error } = await sb.from("profiles").update({ championnats: cles }).eq("id", p.id);
+          if (error) return afficherMessage(/championnats/.test(error.message || "") ? "Colonne manquante : exécute d'abord le script SQL des accès." : messageErreur(error), "erreur");
+          afficherMessage("Accès enregistrés.", "succes"); ecranObservateurs(profil);
+        } })]));
     }
     racine.replaceChildren(barreTitre("Observateurs", () => ecranAccueil(profil)), carte);
   } catch (err) { racine.replaceChildren(barreTitre("Observateurs", () => ecranAccueil(profil)), el("p", { class: "avertissement", text: messageErreur(err) })); }
@@ -833,6 +850,9 @@ async function demarrer() {
     await chargerClubs();
     const profil = await chargerProfil(session.user.id);
     if (!profil.consentement_at || !profil.nom || !profil.fonction) return ecranConsentement(profil);
+    const permis = champsAutorises(profil);
+    if (CHAMP && !permis.some((c) => c.cle === CHAMP.cle)) CHAMP = null;
+    if (!CHAMP && permis.length === 1) CHAMP = permis[0];
     if (CHAMP) ecranAccueil(profil); else ecranChampionnats(profil);
   } catch (err) {
     racine.replaceChildren(el("div", { class: "carte" }, [el("h2", { text: "Impossible de charger tes données" }), el("p", { text: messageErreur(err) }),
