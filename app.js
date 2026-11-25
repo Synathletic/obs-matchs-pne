@@ -162,6 +162,7 @@ function ecranAuth() {
     } catch (err) { afficherMessage(messageErreur(err), "erreur"); bouton.disabled = false; }
   });
   racine.append(el("section", { class: "carte" }, [
+    el("img", { src: "logo-connexion.png", alt: "Logo Ligue 1 : guépard et ballon", class: "logo-connexion" }),
     el("h1", { text: "Bienvenue" }),
     el("p", { class: "petit", text: "Outil d'identification des meilleurs joueurs des matchs de championnat, pour le Programme National Élite et la Sélection nationale U23 de football du Bénin." }),
     form]), signature());

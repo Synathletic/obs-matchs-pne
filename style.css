@@ -185,3 +185,4 @@ textarea:focus { outline: 3px solid var(--orange); outline-offset: 1px; }
 .stat-in{width:100%;padding:6px;min-width:0}
 .stat-bl{width:100%;margin-top:4px}
 .signature .made{margin-top:8px;font-weight:700;color:var(--vert)}
+.logo-connexion{display:block;margin:0 auto 10px;width:min(62%,220px);height:auto}
