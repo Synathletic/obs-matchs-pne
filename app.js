@@ -259,9 +259,15 @@ function ecranConsentement(profil) {
 /* ---------- Choix du championnat ---------- */
 function ecranChampionnats(profil) {
   racine.replaceChildren();
-  const tuiles = champsAutorises(profil).map((c) => el("button", { class: "champ-tuile", type: "button", style: "--c:" + c.couleur, onclick: () => { CHAMP = c; BASE = null; ecranAccueil(profil); } }, [
-    el("img", { src: c.visuel === "amazone" ? IMG_AMAZONE : IMG_JAGUAR, alt: "", class: "champ-img" }),
-    el("span", { class: "champ-nom", text: c.nom })]));
+  const permis = champsAutorises(profil).map((c) => c.cle);
+  const tuiles = CHAMPIONNATS.map((c) => { const autorise = permis.includes(c.cle);
+    return el("button", { class: "champ-tuile", type: "button", style: "--c:" + c.couleur + ";position:relative" + (autorise ? "" : ";opacity:.6"), onclick: () => {
+      if (c.cle !== "ligue1") return afficherMessage(c.nom + " : bientôt disponible.", "info");
+      if (!autorise) return afficherMessage("Accès non autorisé à ce championnat. Demande l'autorisation au staff.", "erreur");
+      CHAMP = c; BASE = null; ecranAccueil(profil); } }, [
+      autorise ? "" : el("span", { text: "🔒", style: "position:absolute;top:6px;right:8px;font-size:16px" }),
+      el("img", { src: c.visuel === "amazone" ? IMG_AMAZONE : IMG_JAGUAR, alt: "", class: "champ-img" }),
+      el("span", { class: "champ-nom", text: c.nom })]); });
   racine.append(el("section", { class: "carte" }, [
     el("h1", { text: "Choisis ton championnat" }),
     el("p", { class: "petit", text: "Bonjour " + (profil.nom || "") + ". Sélectionne le championnat que tu veux observer." }),
@@ -277,7 +283,7 @@ function ecranAccueil(profil) {
   racine.append(
     el("section", { class: "carte" }, [
       el("h1", { text: "Bonjour " + (profil.nom || "") }),
-      champsAutorises(profil).length > 1 ? el("button", { class: "btn btn-secondaire", type: "button", text: "Championnat : " + (CHAMP ? CHAMP.nom : "") + " · changer", onclick: () => ecranChampionnats(profil) }) : el("span", { class: "badge", text: "Championnat : " + (CHAMP ? CHAMP.nom : "") }),
+      el("button", { class: "btn btn-secondaire", type: "button", text: "Championnat : " + (CHAMP ? CHAMP.nom : "") + " · changer", onclick: () => ecranChampionnats(profil) }),
       el("span", { class: "badge" + (estStaff ? " badge-staff" : ""), text: estStaff ? "Staff du programme" : (profil.fonction || "Observateur") }),
       el("p", { class: "petit", text: estStaff ? " Consulte la base des joueurs identifiés après chaque match." : " Après un match, désigne les joueurs qui t'ont marqué (5 au maximum)." })
     ]),
@@ -852,7 +858,6 @@ async function demarrer() {
     if (!profil.consentement_at || !profil.nom || !profil.fonction) return ecranConsentement(profil);
     const permis = champsAutorises(profil);
     if (CHAMP && !permis.some((c) => c.cle === CHAMP.cle)) CHAMP = null;
-    if (!CHAMP && permis.length === 1) CHAMP = permis[0];
     if (CHAMP) ecranAccueil(profil); else ecranChampionnats(profil);
   } catch (err) {
     racine.replaceChildren(el("div", { class: "carte" }, [el("h2", { text: "Impossible de charger tes données" }), el("p", { text: messageErreur(err) }),
