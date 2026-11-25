@@ -188,3 +188,9 @@ textarea:focus { outline: 3px solid var(--orange); outline-offset: 1px; }
 .logo-connexion{display:block;margin:0 auto 10px;width:min(62%,220px);height:auto}
 .guepard { max-width: 220px; }
 .guepard-logo { width: 100%; height: auto; display: block; }
+
+.champ-grille{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.champ-tuile{background:#fff;border:4px solid var(--c);border-radius:20px;padding:10px 6px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font:inherit}
+.champ-tuile:active{transform:scale(.98)}
+.champ-img{width:100%;max-width:150px;height:auto;display:block}
+.champ-nom{font-weight:900;color:var(--c);font-size:1rem;letter-spacing:.4px;text-transform:uppercase;text-align:center}
