@@ -408,7 +408,17 @@ function ecranNouvelle(profil) {
     el("label", { for: "dom", text: "Équipe 1 (à domicile)" }), selDom,
     el("label", { for: "ext", text: "Équipe 2 (à l'extérieur)" }), selExt,
     el("h2", { text: "Joueurs qui t'ont marqué" }),
-    el("p", { class: "petit", text: "5 au maximum. Ce n'est pas une obligation : si tu n'as vu qu'un ou deux bons joueurs, n'en désigne que un ou deux. Attention : une fois validées, tes désignations ne peuvent plus être modifiées ni supprimées." }),
+    el("div", { class: "avertissement" }, [
+      el("strong", { text: "⚠️ CONSEIL IMPORTANT : 1 seul enregistrement par match" }),
+      el("p", { class: "petit", text: "Tu ne peux enregistrer ton observation qu'une seule fois. Prends le temps de réfléchir avant de valider." }),
+      el("details", {}, [el("summary", { text: "Lire le conseil complet" }),
+        el("p", { class: "petit", text: "Nous te conseillons :" }),
+        el("ul", { class: "petit" }, [
+          el("li", { text: "de ne pas te précipiter ;" }),
+          el("li", { text: "de bien réfléchir et d'analyser le match au calme et avec du recul ;" }),
+          el("li", { text: "de te remémorer la rencontre observée afin d'en extraire les joueurs les plus influents et performants sur ce match (poste, qualités…)." })]),
+        el("p", { class: "petit", text: "Merci d'avance pour ta participation. Le Bénin 🇧🇯 compte sur toi. MERCI" })])]),
+    el("p", { class: "petit", text: "5 au maximum. Ce n'est pas une obligation : si tu n'as vu qu'un ou deux bons joueurs, n'en désigne que un ou deux. Une fois validées, tes désignations ne peuvent plus être modifiées ni supprimées." }),
     zoneJoueurs, boutonAjout, boutonEnvoi
   ]);
   form.addEventListener("input", sauverBrouillon);
